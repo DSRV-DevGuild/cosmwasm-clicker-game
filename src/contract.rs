@@ -40,7 +40,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Increment {} => try_increment(deps),
-        ExecuteMsg::Reset { count } => try_reset(deps, info, count),
+        ExecuteMsg::Reset { count } => try_reset(deps, count),
     }
 }
 
@@ -53,11 +53,8 @@ pub fn try_increment(deps: DepsMut) -> Result<Response, ContractError> {
     Ok(Response::new().add_attribute("method", "try_increment"))
 }
 
-pub fn try_reset(deps: DepsMut, info: MessageInfo, count: i32) -> Result<Response, ContractError> {
+pub fn try_reset(deps: DepsMut, count: i32) -> Result<Response, ContractError> {
     STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-        if info.sender != state.owner {
-            return Err(ContractError::Unauthorized {});
-        }
         state.count = count;
         Ok(state)
     })?;
@@ -129,16 +126,7 @@ mod tests {
         // beneficiary can release it
         let unauth_info = mock_info("anyone", &coins(2, "token"));
         let msg = ExecuteMsg::Reset { count: 5 };
-        let res = execute(deps.as_mut(), mock_env(), unauth_info, msg);
-        match res {
-            Err(ContractError::Unauthorized {}) => {}
-            _ => panic!("Must return unauthorized error"),
-        }
-
-        // only the original creator can reset the counter
-        let auth_info = mock_info("creator", &coins(2, "token"));
-        let msg = ExecuteMsg::Reset { count: 5 };
-        let _res = execute(deps.as_mut(), mock_env(), auth_info, msg).unwrap();
+        let _res = execute(deps.as_mut(), mock_env(), unauth_info, msg).unwrap();
 
         // should now be 5
         let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCount {}).unwrap();

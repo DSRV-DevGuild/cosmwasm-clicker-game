@@ -39,14 +39,14 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Increment {} => try_increment(deps),
+        ExecuteMsg::Increment { count } => try_increment(deps, count),
         ExecuteMsg::Reset { count } => try_reset(deps, count),
     }
 }
 
-pub fn try_increment(deps: DepsMut) -> Result<Response, ContractError> {
+pub fn try_increment(deps: DepsMut, count: i32) -> Result<Response, ContractError> {
     STATE.update(deps.storage, |mut state| -> Result<_, ContractError> {
-        state.count += 1;
+        state.count += count;
         Ok(state)
     })?;
 
@@ -106,13 +106,13 @@ mod tests {
 
         // beneficiary can release it
         let info = mock_info("anyone", &coins(2, "token"));
-        let msg = ExecuteMsg::Increment {};
+        let msg = ExecuteMsg::Increment { count: 5 };
         let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-        // should increase counter by 1
+        // should increase counter by "count"
         let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCount {}).unwrap();
         let value: CountResponse = from_binary(&res).unwrap();
-        assert_eq!(18, value.count);
+        assert_eq!(22, value.count);
     }
 
     #[test]

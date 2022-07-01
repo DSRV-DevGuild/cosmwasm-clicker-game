@@ -1,7 +1,7 @@
 // src/wallet/connect.js
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
-const connectWallet = async (chainInfo, { getInfo }) => {
+const connectWallet = async (event, chainInfo, { getInfo }) => {
   // 사용자의 브라우저에 Keplr extension이 설치되었는지 확인
   if (!window.getOfflineSigner || !window.keplr) {
     alert("Please install keplr extension");

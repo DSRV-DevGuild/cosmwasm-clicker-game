@@ -4,6 +4,7 @@ import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import reset from "../contract/reset";
 import get_count from "../contract/get_count";
 import networkInfo from "../wallet/network_info";
+import increment from "../contract/increment";
 
 const Play = () => {
   // 플레이 시간
@@ -94,6 +95,30 @@ const Play = () => {
     );
   };
 
+  // Transaction 버튼을 눌렀을 때 실행
+  const submitScore = async (event) => {
+    // 컨트랙트와 통신하는 동안 loading 상태를 true로 설정
+    setLoading(true);
+    // 사용자가 얻은 점수(score) 만큼 increment 트랜잭션 실행해서 컨트랙트의 count 값을 score로 바꾸기
+    await increment(
+      client,
+      location.state.address,
+      score,
+      location.state.chainId,
+      location.state.denom
+    );
+    // 현재 점수 0으로 초기화
+    setScore(0);
+    // get_count 쿼리를 통해 컨트랙트에 저장된 count 값을 읽어와서 Previous Score에 업데이트
+    const result = await get_count(client, location.state.chainId);
+    setPreviousScore(result.count);
+    // 컨트랙트와 통신이 끝난 후 loading 상태를 false로 설정
+    setLoading(false);
+    // 게임을 다시 시작할 수 있도록 설정
+    setGameOver(false);
+    setTime(playTime);
+  };
+
   // 게임이 시작되기 전에는 GAME START , 게임 오버된 후에는 TRANSACTION 버튼 보이도록
   const renderButton = () => {
     if (gameOver === false) {
@@ -103,7 +128,11 @@ const Play = () => {
         </button>
       );
     } else {
-      return <button className="game-btn">TRANSACTION</button>;
+      return (
+        <button className="game-btn" onClick={(event) => submitScore(event)}>
+          TRANSACTION
+        </button>
+      );
     }
   };
 

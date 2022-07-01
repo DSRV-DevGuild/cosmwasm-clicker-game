@@ -3,8 +3,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import networkInfo from "./wallet/network_info";
 import connectWallet from "./wallet/connect";
-// (debug)
-import increment from "./contract/increment";
 
 function App() {
   // connectWallet에서 받아올 값
@@ -23,10 +21,6 @@ function App() {
     setBalance(balance);
     setChainId(chainId);
     setVisible("visible");
-    // (debug)
-    increment(client, address, 10, chainId, balance.denom).then((result) => {
-      console.log(result);
-    });
   };
 
   // connectWallet으로 가져온 정보를 초기화
